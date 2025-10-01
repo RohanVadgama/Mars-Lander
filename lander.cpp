@@ -43,12 +43,12 @@ void numerical_dynamics (void)
   
   double mag_pos = position.abs();
   double mag_vel = velocity.abs();
-  vector3d drag = (1 / 2) * atmospheric_density(position) * lander_const * mag_vel * velocity;
-  if (parachute_status_t == DEPLOYED) {
-      drag += (1 / 2) * atmospheric_density(position) * parachute_const * mag_vel * velocity;
+  vector3d drag = (0.5) * atmospheric_density(position) * lander_const * mag_vel * velocity;
+  if (parachute_status == DEPLOYED) {
+      drag += (0.5) * atmospheric_density(position) * parachute_const * mag_vel * velocity;
   }
   double lander_mass_current = UNLOADED_LANDER_MASS + fuel * FUEL_CAPACITY*FUEL_DENSITY;
-  acceleration = (thrust - (k / pow(mag_pos, 3))*position*lander_mass_current  - drag)/lander_mass_current
+  acceleration = (thrust - (k / pow(mag_pos, 3)) * position * lander_mass_current - drag) / lander_mass_current;
 
   if (simulation_time == 0.0) {
 
@@ -58,7 +58,8 @@ void numerical_dynamics (void)
   }
   else {
       //do a Verlet update on all subsequent iteration i.e.new_position = .... (Verlet update, using position and previous_position) velocity = ... (Verlet update, using new_position and position)
-
+	  new_position = 2 * position - previous_position + delta_t * delta_t * acceleration;
+	  velocity = (new_position - previous_position) / (2 * delta_t);
   }
 
 
