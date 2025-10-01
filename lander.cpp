@@ -13,6 +13,12 @@
 // ahg@eng.cam.ac.uk and gc121@eng.cam.ac.uk.
 
 #include "lander.h"
+#include <math.h>
+
+double k = GRAVITY * MARS_MASS;   // G*M in gravity calc. 
+double r_mars = MARS_RADIUS;
+double lander_const = M_PI * LANDER_SIZE * LANDER_SIZE * DRAG_COEF_LANDER; //area * drag coeff
+double parachute_const = 5.0 * 4.0 * LANDER_SIZE * LANDER_SIZE * DRAG_COEF_CHUTE; //area * drag coeff
 
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
@@ -20,11 +26,45 @@ void autopilot (void)
   // INSERT YOUR CODE HERE
 }
 
+
+
 void numerical_dynamics (void)
   // This is the function that performs the numerical integration to update the
-  // lander's pose. The time step is delta_t (global variable).
+  // lander's position The time step is delta_t (global variable).
 {
   // INSERT YOUR CODE HERE
+  // verlet intergator
+
+  static vector3d previous_position;
+  vector3d new_position;
+  vector3d thrust = thrust_wrt_world();
+  vector3d acceleration;
+
+  
+  double mag_pos = position.abs();
+  double mag_vel = velocity.abs();
+  vector3d drag = (1 / 2) * atmospheric_density(position) * lander_const * mag_vel * velocity;
+  if (parachute_status_t == DEPLOYED) {
+      drag += (1 / 2) * atmospheric_density(position) * parachute_const * mag_vel * velocity;
+  }
+  double lander_mass_current = UNLOADED_LANDER_MASS + fuel * FUEL_CAPACITY*FUEL_DENSITY;
+  acceleration = (thrust - (k / pow(mag_pos, 3))*position*lander_mass_current  - drag)/lander_mass_current
+
+  if (simulation_time == 0.0) {
+
+      //do an Euler update for the first iteration i.e.new_position = .... (Euler update, using position and velocity) velocity = .... (Euler update, using acceleration)
+      new_position = position + delta_t * velocity;
+      velocity = velocity + delta_t * acceleration;
+  }
+  else {
+      //do a Verlet update on all subsequent iteration i.e.new_position = .... (Verlet update, using position and previous_position) velocity = ... (Verlet update, using new_position and position)
+
+  }
+
+
+   previous_position = position;
+
+   position = new_position;
 
   // Here we can apply an autopilot to adjust the thrust, parachute and attitude
   if (autopilot_enabled) autopilot();
