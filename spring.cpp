@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -20,20 +21,25 @@ int main() {
   t_max = 100;
   dt = 0.1;
 
-  // Euler integration
-  for (t = 0; t <= t_max; t = t + dt) {
+  double x_1 = x + dt*v;
 
+    // Initialize lists with first values
+    x_list = {x, x_1};    
+    v_list = {v};         
+    t_list = {0, dt};    
+
+  // Euler integration
+  for (t = 2*dt; t <= t_max; t = t + dt) {
+
+    a = -k * x_list.back() / m;  // use back() to get last element
+    x = 2*x_list.back() - x_list[x_list.size()-2] + a*pow(dt, 2);
+    v = (1/(2*dt))*(x - x_list[x_list.size()-2]);
     // append current state to trajectories
-    t_list.push_back(t);
     x_list.push_back(x);
     v_list.push_back(v);
-
-    // calculate new position and velocity
-    a = -k * x / m;
-    x = x + dt * v;
-    v = v + dt * a;
-
+    t_list.push_back(t);
   }
+  v_list.push_back(v);
 
   // Write the trajectories to file
   ofstream fout;
