@@ -19,11 +19,30 @@ double k = GRAVITY * MARS_MASS;   // G*M in gravity calc.
 double r_mars = MARS_RADIUS;
 double lander_const = M_PI * LANDER_SIZE * LANDER_SIZE * DRAG_COEF_LANDER; //area * drag coeff
 double parachute_const = 5.0 * 4.0 * LANDER_SIZE * LANDER_SIZE * DRAG_COEF_CHUTE; //area * drag coeff
+double Kh = 0.02;
+double Kp = 0.88;
+double delta = 0;
+double Pout;
+// in lander.h, FUEL_RATE_AT_MAX_THRUST  = 0.5 by default. changed to 0 for debugging, and infinite fuel
+
 
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
 {
-  // INSERT YOUR CODE HERE
+    Pout = -Kp * (0.5 + Kh * (position.abs() - r_mars) + velocity * (position.norm()));
+    if (Pout <= -delta) {
+        throttle = 0;
+    }
+    else 
+        if (Pout < 1 - delta) {
+            throttle = delta + Pout;
+
+        
+    }
+    else {
+        throttle = 1;
+    }
+	cout << "Pout: " << Pout << " Throttle: " << throttle << endl;
 }
 
 
@@ -52,12 +71,12 @@ void numerical_dynamics (void)
 
   if (simulation_time == 0.0) {
 
-      //do an Euler update for the first iteration i.e.new_position = .... (Euler update, using position and velocity) velocity = .... (Euler update, using acceleration)
+      //do an Euler update for the first iteration 
       new_position = position + delta_t * velocity;
       velocity = velocity + delta_t * acceleration;
   }
   else {
-      //do a Verlet update on all subsequent iteration i.e.new_position = .... (Verlet update, using position and previous_position) velocity = ... (Verlet update, using new_position and position)
+      //do a Verlet update on all subsequent iterations 
 	  new_position = 2 * position - previous_position + delta_t * delta_t * acceleration;
 	  velocity = (new_position - previous_position) / (2 * delta_t);
   }
